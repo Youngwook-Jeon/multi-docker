@@ -1,0 +1,21 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t ela87/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true ela87/react-test npm test
+
+after_success:
+  - docker build -t ela87/multi-client ./client
+  - docker build -t ela87/multi-nginx ./nginx
+  - docker build -t ela87/multi-server ./server
+  - docker build -t ela87/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push ela87/multi-client
+  - docker push ela87/multi-nginx
+  - docker push ela87/multi-server
+  - docker push ela87/multi-worker
